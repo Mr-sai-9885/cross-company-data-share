@@ -1,0 +1,11 @@
+Age_group,Transaction_amount,Transaction_type,Month,Region,Fraud_flag,Risk_category
+3645,12000,POS,Feb,East,no,medium
+4660,5000,online,Feb,West,yes,medium
+1825,1500,online,Jan,South,no,low
+1825,2500,POS,Mar,East,yes,high
+2635,4000,ATM,Feb,North,no,medium
+2635,10000,online,Mar,West,yes,high
+3645,7000,POS,Jan,East,no,medium
+3645,13000,ATM,Mar,North,yes,high
+4660,3000,online,Feb,West,no,low
+4660,6000,POS,Mar,South,yes,medium

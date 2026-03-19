@@ -1,0 +1,22 @@
+[
+  {
+    "filename": "anonymized_ce6ebe31.csv",
+    "rows": 3,
+    "columns": [
+      "age_group",
+      "category",
+      "transaction_amount"
+    ],
+    "timestamp": "2026-03-12 10:57:01.223717"
+  },
+  {
+    "filename": "anonymized_94340fcf.csv",
+    "rows": 3,
+    "columns": [
+      "age_group",
+      "category",
+      "transaction_amount"
+    ],
+    "timestamp": "2026-03-13 09:42:47.866775"
+  }
+]

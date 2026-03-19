@@ -1,0 +1,580 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  ShieldCheck, 
+  Lock, 
+  LayoutGrid, 
+  Network, 
+  Activity, 
+  Settings, 
+  Bell, 
+  Search, 
+  Download, 
+  Plus, 
+  ShieldAlert, 
+  ChevronRight, 
+  Globe, 
+  ShieldCheck as Verified, 
+  CheckCircle,
+  FileUp,
+  AlertTriangle,
+  Fingerprint,
+  RefreshCw,
+  LogOut,
+  User as UserIcon,
+  BarChart3,
+  PieChart,
+  Database,
+  AlertCircle,
+  Play,
+  FileText,
+  ShieldQuestion
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Firebase Imports
+import { initializeApp } from 'firebase/app';
+import { 
+  getAuth,
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  onAuthStateChanged, 
+  signOut,
+  signInAnonymously,
+  signInWithCustomToken
+} from 'firebase/auth';
+import { 
+  getFirestore,
+  collection, 
+  addDoc, 
+  serverTimestamp 
+} from 'firebase/firestore';
+
+// --- Firebase Initialization ---
+const firebaseConfig = typeof __firebase_config !== 'undefined' 
+  ? JSON.parse(__firebase_config) 
+  : {
+      apiKey: "AIzaSyCEti8r6yiz2TirDjDItY887Yk5_BffRQc",
+      authDomain: "share-cross.firebaseapp.com",
+      projectId: "share-cross",
+      storageBucket: "share-cross.firebasestorage.app",
+      messagingSenderId: "56904338848",
+      appId: "1:56904338848:web:444de0bd66d669bcdfe8c5",
+      measurementId: "G-0NZXM7SGRK"
+    };
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+const appId = 'datashare-crosscompany';
+
+// --- Shared Components ---
+
+const GlassCard = ({ children, className = "" }) => (
+  <div className={`backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl ${className}`}>
+    {children}
+  </div>
+);
+
+const Button = ({ children, onClick, variant = 'primary', className = "", icon: Icon, loading = false }) => {
+  const variants = {
+    primary: "bg-[#13ec5b] text-black hover:bg-[#3af176] shadow-[0_0_15px_rgba(19,236,91,0.3)]",
+    secondary: "bg-white/5 text-white hover:bg-white/10 border border-white/10",
+    outline: "border border-[#13ec5b]/50 text-[#13ec5b] hover:bg-[#13ec5b]/10",
+    ghost: "text-white/60 hover:text-white hover:bg-white/5"
+  };
+
+  return (
+    <button 
+      onClick={onClick}
+      disabled={loading}
+      className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50 ${variants[variant]} ${className}`}
+    >
+      {loading ? <RefreshCw className="animate-spin" size={18} /> : (Icon && <Icon size={18} />)}
+      {children}
+    </button>
+  );
+};
+
+// --- View: Dashboard ---
+
+const DashboardView = () => (
+  <div className="space-y-8">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {[
+        { label: 'Anonymized Rows', value: '1.24 M', growth: '+18%', icon: Database },
+        { label: 'Privacy Budget', value: '8.4 / 10', status: 'Healthy', icon: Verified },
+        { label: 'Insight Accuracy', value: '99.2%', status: 'Stable', icon: Activity },
+        { label: 'Risk Anomalies', value: '04', growth: 'Low', icon: ShieldAlert }
+      ].map((s, i) => (
+        <GlassCard key={i} className="p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 bg-white/5 rounded-lg text-[#13ec5b]"><s.icon size={18} /></div>
+            {s.growth && <span className="text-[10px] font-bold text-[#13ec5b] bg-[#13ec5b]/10 px-2 py-0.5 rounded-full">{s.growth}</span>}
+          </div>
+          <p className="text-white/40 text-[11px] uppercase tracking-wider font-bold mb-1">{s.label}</p>
+          <p className="text-2xl font-bold tracking-tight">{s.value}</p>
+        </GlassCard>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <GlassCard className="lg:col-span-2 p-8 relative h-[350px] overflow-hidden bg-black/40">
+        <div className="relative z-10 flex flex-col h-full justify-between">
+          <div>
+            <h3 className="text-xl font-bold">Analysis Overview</h3>
+            <p className="text-sm text-white/40">Global risk trends across anonymized sectors</p>
+          </div>
+          <div className="flex items-end gap-2 h-40">
+             {[40, 70, 45, 90, 65, 80, 50, 85, 60, 75].map((h, i) => (
+               <motion.div 
+                 key={i}
+                 initial={{ height: 0 }}
+                 animate={{ height: `${h}%` }}
+                 transition={{ delay: i * 0.1 }}
+                 className="flex-1 bg-gradient-to-t from-[#13ec5b]/80 to-[#13ec5b]/20 rounded-t-sm"
+               />
+             ))}
+          </div>
+        </div>
+      </GlassCard>
+
+      <GlassCard className="p-6 flex flex-col justify-between">
+        <div>
+          <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
+            <Fingerprint size={16} className="text-[#13ec5b]" />
+            Privacy Integrity
+          </h3>
+          <p className="text-xs text-white/40 leading-relaxed">
+            Federated XGBoost Logic is monitoring data splits. Differential privacy noise is currently injected at ε=0.1.
+          </p>
+        </div>
+        <div className="pt-6 border-t border-white/5">
+           <div className="flex justify-between text-[10px] text-white/30 mb-2">
+             <span>ENCLAVE INTEGRITY</span>
+             <span className="text-[#13ec5b]">VERIFIED</span>
+           </div>
+           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+             <div className="h-full bg-[#13ec5b] w-full shadow-[0_0_10px_#13ec5b]" />
+           </div>
+        </div>
+      </GlassCard>
+    </div>
+  </div>
+);
+
+// --- View: Upload ---
+
+const UploadView = ({ userId, onDataProcessed }) => {
+  const [isScanning, setIsScanning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState('');
+  const [file, setFile] = useState(null);
+  const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const processFile = async (selectedFile) => {
+    if (!selectedFile) return;
+
+    if (!selectedFile.name.endsWith(".csv")) {
+      setError("Please upload a valid .csv file.");
+      return;
+    }
+
+    setFile(selectedFile);
+    setIsScanning(true);
+    setError(null);
+
+    try {
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch("http://127.0.0.1:5000/process", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Processing failed");
+        setIsScanning(false);
+        return;
+      }
+
+      // Send processed result to parent component
+      onDataProcessed({
+        fileName: selectedFile.name,
+        downloadFile: data.download_file
+      });
+
+    } catch (err) {
+      setError("Backend connection failed.");
+    }
+
+    setIsScanning(false);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-12 py-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-4xl font-bold tracking-tight">Secure Ingestion</h2>
+        <p className="text-white/40">Your data is processed locally within the browser enclave. Raw IDs never leave this machine.</p>
+      </div>
+
+      <div 
+        onClick={() => !isScanning && fileInputRef.current?.click()}
+        className={`relative aspect-[16/8] bg-black/40 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center transition-all cursor-pointer overflow-hidden ${isScanning ? 'border-[#13ec5b]/50 shadow-[0_0_40px_rgba(19,236,91,0.1)]' : 'border-white/10 hover:border-[#13ec5b]/30'}`}
+      >
+        <input type="file" ref={fileInputRef} className="hidden" accept=".csv" onChange={(e) => processFile(e.target.files[0])} />
+        
+        <AnimatePresence>
+          {isScanning && (
+            <motion.div 
+              initial={{ top: 0 }} animate={{ top: '100%' }}
+              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+              className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#13ec5b] to-transparent shadow-[0_0_20px_#13ec5b] z-20"
+            />
+          )}
+        </AnimatePresence>
+        
+        <div className="relative z-30 flex flex-col items-center gap-4 text-center px-6">
+          <div className={`p-6 rounded-2xl bg-white/5 border border-white/10 ${isScanning ? 'text-[#13ec5b] scale-110 shadow-[0_0_20px_rgba(19,236,91,0.2)]' : 'text-white/20'} transition-all duration-500`}>
+            {isScanning ? <RefreshCw size={48} className="animate-spin" /> : <FileUp size={48} />}
+          </div>
+          <h3 className="text-xl font-bold">
+            {isScanning ? `Vaulting ${file?.name}` : 'Select local CSV for Anonymization'}
+          </h3>
+          <p className="text-xs text-white/30 font-mono tracking-widest uppercase">
+            {isScanning ? statusText : 'age_group, transaction_amount, risk_category'}
+          </p>
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
+              <AlertCircle className="text-red-400" size={16} />
+              <span className="text-[10px] text-red-300 font-bold uppercase">{error}</span>
+            </div>
+          )}
+        </div>
+
+        {isScanning && (
+          <div className="absolute bottom-10 left-10 right-10 flex flex-col gap-2">
+             <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <motion.div className="h-full bg-[#13ec5b]" style={{ width: `${progress}%` }} />
+             </div>
+             <div className="flex justify-between font-mono text-[9px] text-[#13ec5b]">
+               <span>BROWSER_SECURE_ENCLAVE</span>
+               <span>{progress}% SECURED</span>
+             </div>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: 'Input Sanitization', icon: CheckCircle, desc: 'Automatic removal of PII columns.' },
+          { label: 'Salted Hashing', icon: Fingerprint, desc: 'Row identifiers are obscured via SHA-256.' },
+          { label: 'Privacy Noise', icon: Activity, desc: 'Laplace noise added to prevent group discovery.' }
+        ].map((p, i) => (
+          <GlassCard key={i} className="p-5">
+            <p.icon size={20} className="text-[#13ec5b] mb-3" />
+            <h4 className="text-sm font-bold mb-1">{p.label}</h4>
+            <p className="text-[11px] text-white/40 leading-relaxed">{p.desc}</p>
+          </GlassCard>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- View: Analytics / Insights ---
+
+const AnalyticsView = ({ processedData }) => {
+  const [analyzing, setAnalyzing] = useState(false);
+  const [results, setResults] = useState(null);
+
+  const runSafeQuery = async () => {
+    if (!processedData?.downloadFile) return;
+
+    setAnalyzing(true);
+
+    try {
+
+      const response = await fetch(
+        `http://127.0.0.1:5173/analyze/${processedData.downloadFile}`
+      );
+
+      const data = await response.json();
+
+      // Convert backend data to chart format
+      const chartData = Object.entries(data.age_distribution || {}).map(
+        ([label, value]) => ({
+          label,
+          val: value
+        })
+      );
+
+      setResults({
+        chartData: chartData,
+        backendData: data
+      });
+
+    } catch (err) {
+      console.error("Analytics error:", err);
+    }
+
+    setAnalyzing(false);
+  };
+
+  const downloadProcessedCsv = () => {
+    if (!processedData?.downloadFile) return;
+
+    window.open(
+      `http://127.0.0.1:5000/download/${processedData.downloadFile}`,
+      "_blank"
+    );
+  };
+  {processedData?.backendResult && (
+    <div className="text-xs text-white/40 mb-4">
+      <p>Total Rows: {processedData.backendResult.total_rows}</p>
+      <p>Removed Columns: {processedData.backendResult.removed_columns.join(", ")}</p>
+    </div>
+  )}
+
+  return (
+    <div className="space-y-12 max-w-5xl mx-auto py-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-white/5 pb-8 gap-6">
+        <div>
+          <h2 className="text-4xl font-bold mb-2 tracking-tight">Safe Insights</h2>
+          <p className="text-white/40 text-lg">Query the federated mesh without exposing raw records.</p>
+        </div>
+        {processedData ? (
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-end mr-4">
+              <span className="text-[10px] text-[#13ec5b] font-bold uppercase">Ready for Analysis</span>
+              <span className="text-xs text-white/40">{processedData.fileName}</span>
+            </div>
+            <Button onClick={runSafeQuery} loading={analyzing} icon={Play}>Run Safe Query</Button>
+          </div>
+        ) : (
+          <div className="p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-4">
+            <ShieldQuestion className="text-white/20" size={24} />
+            <p className="text-xs text-white/40">Upload a dataset in the Ingestion tab to begin.</p>
+          </div>
+        )}
+      </div>
+
+      {!results ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { title: 'Risk Distribution', desc: 'Identify high-risk segments by age group buckets.', icon: BarChart3 },
+            { title: 'Anonymized Trends', desc: 'Aggregate transaction totals across categories.', icon: PieChart },
+            { title: 'Audit Fingerprint', desc: 'Verification log of local differential privacy application.', icon: Fingerprint },
+          ].map((q, i) => (
+            <GlassCard key={i} className="p-6 cursor-pointer hover:border-[#13ec5b]/50 group transition-all">
+              <div className="p-3 bg-white/5 rounded-xl w-fit mb-4 group-hover:text-[#13ec5b] transition-colors"><q.icon size={24} /></div>
+              <h4 className="font-bold mb-2">{q.title}</h4>
+              <p className="text-xs text-white/40 leading-relaxed">{q.desc}</p>
+            </GlassCard>
+          ))}
+        </div>
+      ) : (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+           <GlassCard className="p-8">
+             <div className="flex justify-between items-start mb-12">
+                <div>
+                   <h3 className="text-2xl font-bold">Query Result: Global Risk by Age</h3>
+                   <p className="text-xs text-white/30 font-mono italic">Differential Privacy Applied (ε=0.1) | Federated Consensus: Active</p>
+                </div>
+                <div className="flex gap-4">
+                  <Button variant="secondary" onClick={() => setResults(null)}>Back</Button>
+                  {results && (
+                    <Button onClick={downloadProcessedCsv} icon={Download}>
+                      Download Safe Dataset
+                    </Button>
+                  )}
+                </div>
+             </div>
+             
+             <div className="flex items-end gap-6 h-64 border-b border-white/10 pb-4">
+                {results.chartData.map((d, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-4 h-full justify-end group">
+                     <span className="text-[10px] font-bold text-[#13ec5b] opacity-0 group-hover:opacity-100 transition-opacity">{d.val.toFixed(1)}%</span>
+                     <motion.div 
+                       initial={{ height: 0 }}
+                       animate={{ height: `${d.val}%` }}
+                       className="w-full bg-[#13ec5b]/20 border-t-2 border-[#13ec5b] rounded-t-lg hover:bg-[#13ec5b]/40 transition-colors" 
+                     />
+                     <span className="text-[10px] text-white/40 uppercase tracking-tighter whitespace-nowrap">{d.label}</span>
+                  </div>
+                ))}
+             </div>
+           </GlassCard>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+// --- App Root ---
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [view, setView] = useState('dashboard');
+  const [authError, setAuthError] = useState(null);
+  const [processedData, setProcessedData] = useState(null);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (e) {
+        console.error("Auth init failed", e);
+        setAuthReady(true);
+      }
+    };
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setAuthReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const loginGoogle = async () => {
+    setAuthError(null);
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (e) {
+      setAuthError(e.code === 'auth/unauthorized-domain' ? "Domain unauthorized. Add to Firebase Authorized Domains." : e.message);
+    }
+  };
+
+  if (!authReady) return (
+    <div className="min-h-screen bg-[#020b1c] flex items-center justify-center">
+      <RefreshCw className="text-[#13ec5b] animate-spin" size={32} />
+    </div>
+  );
+
+  if (!user || user.isAnonymous) {
+     if (!user || view === 'login_portal') return (
+        <div className="min-h-screen flex items-center justify-center bg-[#020b1c] p-6 relative overflow-hidden font-display">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#13ec5b]/5 blur-[120px] rounded-full" />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md relative z-10">
+            <GlassCard className="p-8 sm:p-10 border-t-[#13ec5b]/30 border-t">
+              <div className="flex flex-col items-center text-center mb-10">
+                <div className="w-20 h-20 bg-[#13ec5b]/10 rounded-3xl flex items-center justify-center mb-6 shadow-glow ring-1 ring-[#13ec5b]/30 rotate-3">
+                  <Lock className="text-[#13ec5b]" size={40} />
+                </div>
+                <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">The Glass Vault</h1>
+                <p className="text-white/40 text-sm italic">"Privacy-Safe Cross-Company Insights"</p>
+              </div>
+              <div className="space-y-4">
+                <Button onClick={loginGoogle} className="w-full h-12" icon={Globe}>Continue with Google</Button>
+                <div className="relative py-4 flex items-center justify-center">
+                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5" /></div>
+                   <span className="relative bg-[#020b1c] px-3 text-[10px] font-bold text-white/20 uppercase">Secure Entry</span>
+                </div>
+                <Button onClick={() => signInAnonymously(auth)} variant="secondary" className="w-full h-12" icon={Fingerprint}>Anonymous Access</Button>
+                {authError && <p className="text-[10px] text-red-400 mt-4 text-center">{authError}</p>}
+              </div>
+            </GlassCard>
+          </motion.div>
+        </div>
+      );
+  }
+
+  return (
+    <div className="flex h-screen w-full bg-[#020b1c] text-white font-sans overflow-hidden">
+      <nav className="w-20 bg-white/[0.02] border-r border-white/10 flex flex-col items-center py-8 gap-10 shrink-0">
+        <div className="w-12 h-12 bg-[#13ec5b]/10 rounded-2xl flex items-center justify-center border border-[#13ec5b]/20 text-[#13ec5b]">
+          <ShieldCheck size={24} />
+        </div>
+        <div className="flex flex-col gap-6">
+          {[
+            { id: 'dashboard', icon: LayoutGrid },
+            { id: 'upload', icon: FileUp },
+            { id: 'analytics', icon: Activity },
+            { id: 'settings', icon: Settings }
+          ].map((item) => (
+            <button 
+              key={item.id}
+              onClick={() => setView(item.id)}
+              className={`p-3 rounded-xl transition-all ${view === item.id ? 'bg-[#13ec5b] text-black shadow-glow' : 'text-white/40 hover:bg-white/5'}`}
+            >
+              <item.icon size={20} />
+            </button>
+          ))}
+        </div>
+        <div className="mt-auto flex flex-col gap-6 items-center">
+          <button onClick={() => signOut(auth)} className="text-white/20 hover:text-red-400 transition-colors"><LogOut size={20} /></button>
+          <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden bg-white/5 flex items-center justify-center">
+            {user.photoURL ? <img src={user.photoURL} alt="Avatar" /> : <UserIcon size={20} className="text-white/20" />}
+          </div>
+        </div>
+      </nav>
+
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <header className="h-16 px-8 flex items-center justify-between border-b border-white/10">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xs font-bold tracking-[0.2em] text-white/30 uppercase">Vault Node v1.0</h2>
+            <div className="h-4 w-px bg-white/10" />
+            <p className="text-sm font-medium text-[#13ec5b] uppercase tracking-wider">{view}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] text-white/40 font-mono hidden sm:block">{user.email || 'ANONYMOUS_ENCLAVE'}</span>
+            <div className="flex items-center gap-2 px-3 py-1 bg-[#13ec5b]/10 rounded-full border border-[#13ec5b]/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#13ec5b] animate-pulse" />
+              <span className="text-[10px] font-bold text-[#13ec5b]">ENCLAVE ACTIVE</span>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-8">
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={view}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}
+            >
+              {view === 'dashboard' && <DashboardView />}
+              {view === 'upload' && <UploadView userId={user.uid} onDataProcessed={setProcessedData} />}
+              {view === 'analytics' && <AnalyticsView processedData={processedData} />}
+              {view === 'settings' && (
+                <div className="max-w-2xl mx-auto space-y-6">
+                  <h2 className="text-2xl font-bold">Node Identity</h2>
+                  <GlassCard className="p-6 flex items-center gap-4">
+                     <div className="size-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
+                        {user.photoURL ? <img src={user.photoURL} className="rounded-full" alt="User" /> : <UserIcon size={32} className="text-white/20" />}
+                     </div>
+                     <div>
+                        <p className="font-bold">{user.displayName || 'Anonymous Peer'}</p>
+                        <p className="text-xs text-white/40 font-mono">{user.email || user.uid}</p>
+                     </div>
+                  </GlassCard>
+                  <Button variant="secondary" onClick={() => signOut(auth)} className="w-full">Sign Out of Enclave</Button>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
+
+      <style>{`
+        body { background-color: #020b1c; margin: 0; font-family: 'Inter', sans-serif; }
+        .shadow-glow { box-shadow: 0 0 20px rgba(19, 236, 91, 0.2); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+      `}</style>
+    </div>
+  );
+}
