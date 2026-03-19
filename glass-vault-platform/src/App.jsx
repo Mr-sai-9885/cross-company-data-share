@@ -591,6 +591,7 @@ export default function App() {
 }, []);
 
   const loginGoogle = async () => {
+<<<<<<< HEAD
   setAuthError(null);
   try {
     await signInWithPopup(auth, googleProvider);
@@ -598,6 +599,11 @@ export default function App() {
     if (e.code === 'auth/unauthorized-domain') {
       setAuthError("Domain unauthorized. Add to Firebase Authorized Domains.");
     } else {
+=======
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (e) {
+>>>>>>> 71ec042 (fix auth)
       setAuthError(e.message);
     }
   }

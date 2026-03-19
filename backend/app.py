@@ -13,8 +13,8 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)   
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-PORT = int(os.getenv("PORT", 5000))
+OPENROUTER_API_KEY = "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"
+PORT = 5000
 
 
 DATA_REGISTRY = "dataset_registry.json"
@@ -159,7 +159,6 @@ def download_csv(filename):
 
 # ------------------ Ask AI ------------------
 def ask_ai(prompt):
-
     url = "https://openrouter.ai/api/v1/chat/completions"
 
     headers = {
@@ -175,11 +174,21 @@ def ask_ai(prompt):
         ]
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        result = response.json()
 
-    result = response.json()
+        print("🔍 FULL AI RESPONSE:", result)   # DEBUG
 
-    return result["choices"][0]["message"]["content"]
+        # ✅ SAFE CHECK
+        if "choices" in result:
+            return result["choices"][0]["message"]["content"]
+        else:
+            return f"AI Error: {result}"
+
+    except Exception as e:
+        print("🔥 REQUEST ERROR:", str(e))
+        return "AI request failed"
 
 # ------------------ AI Query Endpoint ------------------
 
