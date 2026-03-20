@@ -13,7 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)   
 
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 PORT = 5000
 
 
@@ -160,10 +160,13 @@ def download_csv(filename):
 # ------------------ Ask AI ------------------
 def ask_ai(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
+    print("API KEY:", OPENROUTER_API_KEY)
 
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:5000",   # REQUIRED
+        "X-Title": "Glass Vault AI"                # REQUIRED
     }
 
     data = {
